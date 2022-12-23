@@ -93,7 +93,7 @@ BraTS2021
 
 ## Result
 
-- ![outline](Quantitative Result.png)
+- ![outline](Quantitative_Result.png)
 
 ## Citation
 If you find the code useful, please consider citing our paper using the following BibTeX entry.
