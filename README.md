@@ -60,7 +60,7 @@ BraTS2021
 - Download the repository.
 
   ```
-  git clone https://github.com/linjianwei/CKD-TransBTS.git
+  git clone https://github.com/sword98/CKD-TransBTS.git
   ```
 
 - We provide some command for you to train and inference the model  from scratch, more  parameter settings can be found in the `main.py`. The `--exp-name` parameter is the folder name used to store the files saved by the program. The default value is `"CKD"`, but you can modify it to something else if you want.
