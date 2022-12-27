@@ -63,7 +63,7 @@ BraTS2021
   git clone https://github.com/sword98/CKD-TransBTS.git
   ```
 
-- We provide some command for you to train and inference the model  from scratch, more  parameter settings can be found in the `main.py`. The `--exp-name` parameter is the folder name used to store the files saved by the program. The default value is `"CKD"`, but you can modify it to something else if you want.
+- You can train our method from scratch and test it by:
 
   - Train
 
@@ -81,14 +81,15 @@ BraTS2021
         --workers 1 --mode "test"
     ```
 
-- Download the pre-trained model from the [Google Drive](https://drive.google.com/file/d/1gQLQzx2g9_BFhI_rpOfDfERLozHX7pOg/view?) and place it in the  `"CKD_Inference"` folder under the `"best_model"` folder.
+- You can also test our model directly by:
 
   ```
   python main.py --exp-name = "CKD_Inference" \
       --device 0 --dataset-folder "dataset/" \
       --batch-size 1 --workers 1 --mode "test"
   ```
-  
+
+To test our method directly, you should download the [checkpoint](https://drive.google.com/file/d/1gQLQzx2g9_BFhI_rpOfDfERLozHX7pOg/view?) and place it in the `"CKD_Inference"` folder under the `"best_model"` folder.
   
 
 ## Result
