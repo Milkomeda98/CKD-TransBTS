@@ -2,9 +2,7 @@
 
 
 ## Introduction
-This is the source code of the paper **[CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation](https://arxiv.org/abs/2207.07370)**
-
-The codebase is based from [Swin-Transfomrer](https://github.com/microsoft/Swin-Transformer) and [MONAI](https://github.com/Project-MONAI/MONAI).
+This is the source code of our paper **[CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation](https://arxiv.org/abs/2207.07370)**, which is implemented based on the code of [Swin-Transfomrer](https://github.com/microsoft/Swin-Transformer) and [MONAI](https://github.com/Project-MONAI/MONAI).
 
 ![outline](CKD-TransBTS.png)
 
