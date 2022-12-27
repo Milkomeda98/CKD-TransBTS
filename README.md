@@ -29,7 +29,7 @@ Brain tumor segmentation (BTS) in magnetic resonance image (MRI) is crucial for 
 
 BraTS2021
 
-1. Please download the BraTS2021 dataset from the official competition[ website](https://www.synapse.org/#!Synapse:syn25829067/wiki/), and the detailed description is available [here](http://braintumorsegmentation.org/). Put the BraTS2021 dataset under `dataset/` folder. After downloading the data, the folder structure should be like below:
+- Please download the BraTS2021 dataset from the official competition[ website](https://www.synapse.org/#!Synapse:syn25829067/wiki/), and the detailed description is available [here](http://braintumorsegmentation.org/). Put the BraTS2021 dataset into `dataset/` folder and it's structure should be like below:
 
 ```
 ├── dataset/
@@ -63,7 +63,7 @@ BraTS2021
   git clone https://github.com/sword98/CKD-TransBTS.git
   ```
 
-- You can train our method from scratch and test it by:
+- Train our method from scratch and test it by:
 
   - Train
 
@@ -81,7 +81,7 @@ BraTS2021
         --workers 1 --mode "test"
     ```
 
-- You can also test our model directly by:
+- Test our model directly by:
 
   ```
   python main.py --exp-name = "CKD_Inference" \
