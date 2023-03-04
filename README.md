@@ -27,7 +27,7 @@ Brain tumor segmentation (BTS) in magnetic resonance image (MRI) is crucial for 
 
 BraTS2021
 
-- Please download the BraTS2021 dataset from the official competition[ website](https://www.synapse.org/#!Synapse:syn25829067/wiki/), and the detailed description is available [here](http://braintumorsegmentation.org/). Put the BraTS2021 dataset into `dataset/` folder and it's structure should be like below:
+- Please download the BraTS2021 dataset from the official competition[ website](https://www.synapse.org/#!Synapse:syn25829067/wiki/), and the detailed description is available [here](http://braintumorsegmentation.org/). The dataset split of Table 1 (in paper) has been released in `dataset/`. Please put the BraTS2021 dataset into `dataset/` folder and it's structure should be like below:
 
 ```
 ├── dataset/
