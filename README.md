@@ -2,7 +2,7 @@
 
 
 ## Introduction
-This is the source code of our paper **[CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation](https://arxiv.org/abs/2207.07370)**, which is implemented based on the code of [Swin-Transfomrer](https://github.com/microsoft/Swin-Transformer) and [MONAI](https://github.com/Project-MONAI/MONAI).
+This is the source code of our paper **[CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation](https://ieeexplore.ieee.org/document/10056308/authors)**, which is implemented based on the code of [Swin-Transfomrer](https://github.com/microsoft/Swin-Transformer) and [MONAI](https://github.com/Project-MONAI/MONAI).
 
 ![outline](CKD-TransBTS.png)
 
@@ -97,11 +97,14 @@ To test our method directly, you should download the [checkpoint](https://drive.
 ## Citation
 If you find the code useful, please consider citing our paper using the following BibTeX entry.
 ```
-@article{lin2022ckd,
-  title={CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation},
-  author={Lin, Jianwei and Lin, Jiatai and Lu, Cheng and Chen, Hao and Lin, Huan and Zhao, Bingchao and Shi, Zhenwei and Qiu, Bingjiang and Pan, Xipeng and Xu, Zeyan and others},
-  journal={arXiv preprint arXiv:2207.07370},
-  year={2022}
-}
+@ARTICLE{10056308,
+  author={Lin, Jianwei and Lin, Jiatai and Lu, Cheng and Chen, Hao and Lin, Huan and Zhao, Bingchao and Shi, Zhenwei and Qiu, Bingjiang and Pan, Xipeng and Xu, Zeyan and Huang, Biao and Liang, Changhong and Han, Guoqiang and Liu, Zaiyi and Han, Chu},
+  journal={IEEE Transactions on Medical Imaging}, 
+  title={CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={1-1},
+  doi={10.1109/TMI.2023.3250474}}
 ```
 
