@@ -66,7 +66,7 @@ BraTS2021
   - Train
 
     ```
-    python main.py --exp-name = "CKD" \
+    python main.py --exp-name "CKD" \
         --device 0 --dataset-folder "dataset/" --batch-size 1 \
         --workers 1 --lr 1e-4 --end-epoch 500 --mode "train"
     ```
@@ -74,7 +74,7 @@ BraTS2021
   - Inference
 
     ```
-    python main.py --exp-name = "CKD" \
+    python main.py --exp-name "CKD" \
         --device 0 --dataset-folder "dataset/" --batch-size 1 \
         --workers 1 --mode "test"
     ```
@@ -82,7 +82,7 @@ BraTS2021
 - Test our model directly by:
 
   ```
-  python main.py --exp-name = "CKD_Inference" \
+  python main.py --exp-name "CKD_Inference" \
       --device 0 --dataset-folder "dataset/" \
       --batch-size 1 --workers 1 --mode "test"
   ```
