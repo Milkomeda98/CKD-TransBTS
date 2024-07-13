@@ -29,8 +29,8 @@ def merge_directories(base_dir, new_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Merge patient directories from train, test, and val into one directory.")
-    parser.add_argument('base_dir', type=str, help="Base directory containing train, test, and val directories.")
-    parser.add_argument('new_dir', type=str, help="New directory to store merged patient directories.")
+    parser.add_argument('--base_dir', type=str, help="Base directory containing train, test, and val directories.")
+    parser.add_argument('--new_dir', type=str, help="New directory to store merged patient directories.")
     
     args = parser.parse_args()
     
