@@ -22,15 +22,15 @@ def merge_directories(base_dir, new_dir):
                 # Define the new path for the patient folder
                 new_patient_folder_path = os.path.join(new_dir, patient_folder)
                 
-                # Copy the patient folder to the new directory
-                shutil.copytree(patient_folder_path, new_patient_folder_path)
+                # Move the patient folder to the new directory
+                shutil.move(patient_folder_path, new_patient_folder_path)
 
     print("Merging completed successfully.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Merge patient directories from train, test, and val into one directory.")
-    parser.add_argument('--base_dir', type=str, help="Base directory containing train, test, and val directories.")
-    parser.add_argument('--new_dir', type=str, help="New directory to store merged patient directories.")
+    parser = argparse.ArgumentParser(description="Move patient directories from train, test, and val into one directory.")
+    parser.add_argument('base_dir', type=str, help="Base directory containing train, test, and val directories.")
+    parser.add_argument('new_dir', type=str, help="New directory to store merged patient directories.")
     
     args = parser.parse_args()
     
