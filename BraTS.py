@@ -11,9 +11,9 @@ class BraTS(Dataset):
         self.patients_ids = patient_ids
         self.mode = mode
         self.datas = []
-        self.pattens =["_t1","_t1ce","_t2","_flair"]
+        self.pattens =["-t1n","-t1c","-t2w","-t2f"]
         if mode == "train" or mode == "train_val" or mode == "test" :
-            self.pattens += ["_seg"]
+            self.pattens += ["-seg"]
         for patient_id in patient_ids:
             paths = [f"{patient_id}{patten}.nii.gz" for patten in self.pattens]
             patient = dict(
@@ -31,8 +31,9 @@ class BraTS(Dataset):
         patient_label = torch.tensor(load_nii(f"{self.patients_dir}/{patient_id}/{patient['seg']}").astype("int8"))
         patient_image = torch.stack([patient_image[key] for key in patient_image])  
         if self.mode == "train" or self.mode == "train_val" or self.mode == "test":
-            et = patient_label == 4
-            tc = torch.logical_or(patient_label == 1, patient_label == 4)
+            # ET=3, ED=2, NCR=1, and background=0
+            et = patient_label == 3
+            tc = torch.logical_or(patient_label == 1, patient_label == 3)
             wt = torch.logical_or(tc, patient_label == 2)
             patient_label = torch.stack([et, tc, wt])
 

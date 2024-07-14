@@ -51,6 +51,7 @@ def init_folder(args):
     args.csv_folder = mkdir(f"{args.base_folder}/csv/{args.exp_name}")
     print(f"The code folder are located in {os.path.dirname(os.path.realpath(__file__))}")
     print(f"The dataset folder located in {args.dataset_folder}")
+
 def main(args):  
     writer = SummaryWriter(args.writer_folder)
     model = CKD(embed_dim=32, output_dim=3, img_size=(128, 128, 128), patch_size=(4, 4, 4), in_chans=1, depths=[2, 2, 2], num_heads=[2, 4, 8, 16], window_size=(7, 7, 7), mlp_ratio=4.).cuda()
@@ -196,10 +197,15 @@ if __name__=='__main__':
     args=parser.parse_args()
     for arg in vars(args):
         print(format(arg, '<20'), format(str(getattr(args, arg)), '<'))
-    if torch.cuda.device_count() == 0:
-        raise RuntimeWarning("Can not run without GPUs")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if not device == "cpu" and device == "cuda":
+        if torch.cuda.device_count() == 0:
+            raise RuntimeWarning("Can not run without GPUs")
+        
+        print(f'Number of cuda devices: {torch.cuda.device_count()}')
+        torch.cuda.set_device(args.devices)
+
     init_randon(args.seed)
     init_folder(args)
-    torch.cuda.set_device(args.devices)
     main(args)
 
