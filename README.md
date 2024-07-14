@@ -99,6 +99,12 @@ To test our method directly, you should download the [checkpoint](https://drive.
 
 - ![outline](Quantitative_Result.png)
 
+## Observations
+- if running on machine with limmited number of workers decrease workers to 16 or something else
+- downgrade protobuf
+- specify the full dataset path 
+
+
 ## Citation
 If you find the code useful, please consider citing our paper using the following BibTeX entry.
 ```
