@@ -12,5 +12,4 @@ tensorboard==2.7.0
 pandas==1.1.5
 einops==0.3.2
 timm==0.4.12
-
-# Missing packages to be added below
+protobuf==3.20.*
