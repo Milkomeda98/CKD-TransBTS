@@ -102,7 +102,7 @@ def train_manager(args, train_loader, train_val_loader, model, criterion, optimi
     best_mean_dice = -np.inf
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.end_epoch, eta_min=1e-5)
     start_epoch = 0
-    csv_file_path = "csv/data.csv"
+    csv_file_path = f"csv/data_{args.model_name}.csv"
     result_header_list = ["et_dice", "tc_dice", "wt_dice", "mean_dice", 
                           "et_hd", "tc_hd", "wt_hd", "mean_hd", 
                           "et_sens", "tc_sens", "wt_sens", "mean_sens", 
