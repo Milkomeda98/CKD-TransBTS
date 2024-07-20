@@ -122,13 +122,13 @@ class UNet3D(nn.Module):
         return out
     
 #-----------------------------------------------------------------------------
-# # testing 
+# # # testing 
 # if __name__ == '__main__':
 #     #Configurations according to the Xenopus kidney dataset
 #     model = UNet3D(in_channels=4, num_classes=3)
-#     input = torch.rand(1, 4, 128, 128, 128)
-#     # out = model(input)
-#     # print(out.shape)
+#     input = torch.rand(1, 4, 40, 40, 40)
+#     out = model(input)
+#     print(out.shape)
 
 
 #     start_time = time.time()
