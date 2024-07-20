@@ -187,3 +187,19 @@ def cal_dice(predict, target, haussdor, dice):
         wt_hd = 347
     
     return [et_dice, tc_dice, wt_dice, et_hd, tc_hd, wt_hd]
+
+class AvgMeter(object):
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = np.where(self.count > 0, self.sum / self.count, self.sum)
