@@ -8,6 +8,7 @@ import torch.utils.data
 from torch.utils.tensorboard import SummaryWriter
 from BraTS import get_datasets
 from models.model import CKD
+from models.UNet.model import UNet3D
 from models import DataAugmenter
 from utils import mkdir, save_best_model, save_seg_csv, cal_dice, cal_confuse, save_test_label, AverageMeter, save_checkpoint
 from torch.backends import cudnn
@@ -30,6 +31,19 @@ parser.add_argument('--tta', default=True, type=bool, help="test time augmentati
 parser.add_argument('--seed', default=1)
 parser.add_argument('--val', default=1, type=int, help="Validation frequency of the model")
 
+
+def select_model(name):
+    '''slect DL model for training or testing.'''
+    all_models = {
+        "CKD-TransBTS": CKD(embed_dim=32, output_dim=3, img_size=(128, 128, 128), patch_size=(4, 4, 4), in_chans=1, depths=[2, 2, 2], num_heads=[2, 4, 8, 16], window_size=(7, 7, 7), mlp_ratio=4.).cuda(),
+        "UNet": UNet3D(in_channels=4, num_classes=3),
+        "SegResNet": None
+    }
+    try:
+        model = all_models[name]
+    except KeyError:
+        print(f"Invalid model name: {name}")
+    return model
 
 def init_randon(seed):
     torch.manual_seed(seed)        
@@ -54,7 +68,7 @@ def init_folder(args):
 
 def main(args):  
     writer = SummaryWriter(args.writer_folder)
-    model = CKD(embed_dim=32, output_dim=3, img_size=(128, 128, 128), patch_size=(4, 4, 4), in_chans=1, depths=[2, 2, 2], num_heads=[2, 4, 8, 16], window_size=(7, 7, 7), mlp_ratio=4.).cuda()
+    model = select_model(args.model_name)
     criterion=DiceLoss(sigmoid=True).cuda()
     optimizer=torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
 
