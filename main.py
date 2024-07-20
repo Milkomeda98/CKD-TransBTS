@@ -30,13 +30,14 @@ parser.add_argument('--resume', default=False, type=bool)
 parser.add_argument('--tta', default=True, type=bool, help="test time augmentation")
 parser.add_argument('--seed', default=1)
 parser.add_argument('--val', default=1, type=int, help="Validation frequency of the model")
+parser.add_argument('--model-name', default="CKD-TransBTS", type=str, help="Model name to be selected.")
 
 
 def select_model(name):
     '''slect DL model for training or testing.'''
     all_models = {
         "CKD-TransBTS": CKD(embed_dim=32, output_dim=3, img_size=(128, 128, 128), patch_size=(4, 4, 4), in_chans=1, depths=[2, 2, 2], num_heads=[2, 4, 8, 16], window_size=(7, 7, 7), mlp_ratio=4.).cuda(),
-        "UNet": UNet3D(in_channels=4, num_classes=3),
+        "UNet": UNet3D(in_channels=4, num_classes=3).cuda(),
         "SegResNet": None
     }
     try:
