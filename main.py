@@ -76,8 +76,8 @@ def main(args):
     if args.mode == "train":
         train_dataset = get_datasets(args.dataset_folder, "train")
         train_val_dataset = get_datasets(args.dataset_folder, "train_val")
-        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=True)
-        train_val_loader = torch.utils.data.DataLoader(train_val_dataset, batch_size=1, shuffle=False, num_workers=args.workers)
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=False, pin_memory=True)
+        train_val_loader = torch.utils.data.DataLoader(train_val_dataset, batch_size=1, shuffle=False, num_workers=args.workers, pin_memory=True)
         train_manager(args, train_loader, train_val_loader, model, criterion, optimizer, writer)
     
     elif args.mode == "test" :
