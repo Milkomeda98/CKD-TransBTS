@@ -107,10 +107,10 @@ def train_manager(args, train_loader, train_val_loader, model, criterion, optimi
                           "et_hd", "tc_hd", "wt_hd", "mean_hd", 
                           "et_sens", "tc_sens", "wt_sens", "mean_sens", 
                           "et_spec", "tc_spec", "wt_spec", "mean_spec"]
-    if not os.path.exits(csv_file_path):
+    if not os.path.exists(csv_file_path):
         with open(csv_file_path, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(result_header_list)  # Write the header
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(result_header_list)  # Write the header
     
     if args.resume:
         checkpoint = torch.load(os.path.join(args.checkpoint_folder, "checkpoint.pth.tar"))
@@ -133,8 +133,8 @@ def train_manager(args, train_loader, train_val_loader, model, criterion, optimi
                 et_sens, tc_sens, wt_sens, mean_sens = epoch_mean["et_sens"], epoch_mean["tc_sens"], epoch_mean["wt_sens"], epoch_mean["mean_sens"]
                 et_spec, tc_spec, wt_spec, mean_spec = epoch_mean["et_spec"], epoch_mean["tc_spec"], epoch_mean["wt_spec"], epoch_mean["mean_spec"]
                 with open(csv_file_path, mode='a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([et_dice, tc_dice, wt_dice, mean_dice,
+                    csv_writer = csv.writer(file)
+                    csv_writer.writerow([et_dice, tc_dice, wt_dice, mean_dice,
                                      et_hd, tc_hd, wt_hd, mean_hd, 
                                      et_sens, tc_sens, wt_sens, mean_sens, 
                                      et_spec, tc_spec, wt_spec, mean_spec])  # Append a row of data
