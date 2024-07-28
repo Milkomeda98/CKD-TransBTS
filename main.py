@@ -39,7 +39,8 @@ parser.add_argument('--resume', default=False, type=bool)
 parser.add_argument('--tta', default=True, type=bool, help="test time augmentation")
 parser.add_argument('--seed', default=1)
 parser.add_argument('--val', default=1, type=int, help="Validation frequency of the model")
-parser.add_argument('--model-name', default="CKD-TransBTS", type=str, help="Model name to be selected.")
+parser.add_argument("--solver", default="SGD", type = str, help = "Sovler used for training")
+parser.add_argument('--model-name', choices=["CKD-TransBTS", "UNet"], default="CKD-TransBTS", type=str, help="Model name to be selected.")
 
 
 def select_model(name):
@@ -80,7 +81,15 @@ def main(args):
     writer = SummaryWriter(args.writer_folder)
     model = select_model(args.model_name)
     criterion=DiceLoss(sigmoid=True).cuda()
-    optimizer=torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
+    if args.solver == "Adam":
+        optimizer=torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
+    elif args.solver == "SGD":
+        optimizer=torch.optim.SGD(model.parameters(),lr=args.lr, weight_decay=1e-5)
+    elif args.sovler == "AdamW":
+        optimizer=torch.optim.AdamW(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
+
+
+
 
     if args.mode == "train":
         train_dataset = get_datasets(args.dataset_folder, "train")
