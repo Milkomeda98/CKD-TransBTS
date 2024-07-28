@@ -25,6 +25,7 @@ from monai.transforms import (
 import time
 import pandas as pd
 import csv
+import gc
 
 parser = argparse.ArgumentParser(description='BraTS')
 parser.add_argument('--exp-name', default="CKD", type=str)
@@ -87,13 +88,13 @@ def main(args):
     criterion=DiceLoss(sigmoid=True).cuda()
     if args.solver == "Adam":
         optimizer=torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
+        print("Using Adam optimizer")
     elif args.solver == "SGD":
+        print("Using SGD optimizer")
         optimizer=torch.optim.SGD(model.parameters(),lr=args.lr, weight_decay=1e-5)
     elif args.sovler == "AdamW":
+        print("Using AdamW optimizer")
         optimizer=torch.optim.AdamW(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
-
-
-
 
     if args.mode == "train":
         train_dataset = get_datasets(args.dataset_folder, "train")
@@ -156,6 +157,7 @@ def train_manager(args, train_loader, train_val_loader, model, criterion, optimi
                     best_mean_dice = mean_dice
                     save_best_model(args, model)
         save_checkpoint(args, dict(epoch=epoch, model = model.state_dict(), optimizer=optimizer.state_dict(), scheduler=scheduler.state_dict()))
+        gc.collect()
         print(f"epoch = {epoch}, train_loss = {train_loss}, mean_dice = {mean_dice}, mean_hd = {mean_hd}, mean_sens = {mean_sens}")
     print("finish train epoch")
 
