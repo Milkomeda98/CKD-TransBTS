@@ -58,7 +58,7 @@ class BraTS(Dataset):
             patient_image, patient_label, pad_list = pad_image_and_label(patient_image, patient_label, target_size=(d+pad_d, h+pad_h, w+pad_w))
 
         return dict(
-            patient_id = patient["id"][0],
+            patient_id = patient["id"],
             image = patient_image,
             label = patient_label,
             nonzero_indexes = ((zmin, zmax), (ymin, ymax), (xmin, xmax)),
