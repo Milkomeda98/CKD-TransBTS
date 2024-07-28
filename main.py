@@ -42,6 +42,10 @@ parser.add_argument('--val', default=1, type=int, help="Validation frequency of 
 parser.add_argument("--solver", default="SGD", type = str, help = "Sovler used for training")
 parser.add_argument('--model-name', choices=["CKD-TransBTS", "UNet"], default="CKD-TransBTS", type=str, help="Model name to be selected.")
 
+def get_value(value):
+    if torch.is_tensor(value):
+        return value.item()
+    return value
 
 def select_model(name):
     '''slect DL model for training or testing.'''
@@ -214,8 +218,8 @@ def validate(data_loader, model):
         confuse_metric = cal_confuse(predict, targets, patient_id)
         et_dice, tc_dice, wt_dice = dice_metrics[0], dice_metrics[1], dice_metrics[2]
         et_hd, tc_hd, wt_hd = dice_metrics[3], dice_metrics[4], dice_metrics[5]
-        et_sens, tc_sens, wt_sens = confuse_metric[0][0].item(), confuse_metric[1][0].item(), confuse_metric[2][0].item()
-        et_spec, tc_spec, wt_spec = confuse_metric[0][1].item(), confuse_metric[1][1].item(), confuse_metric[2][1].item()
+        et_sens, tc_sens, wt_sens = get_value(confuse_metric[0][0]), get_value(confuse_metric[1][0]), get_value(confuse_metric[2][0])
+        et_spec, tc_spec, wt_spec = get_value(confuse_metric[0][1]), get_value(confuse_metric[1][1]), get_value(confuse_metric[2][1])
         metrics_dict.append(dict(
             et_dice=et_dice, tc_dice=tc_dice, wt_dice=wt_dice, 
             mean_dice = (et_dice + tc_dice + wt_dice)/3,
@@ -229,11 +233,6 @@ def validate(data_loader, model):
     df = pd.DataFrame(metrics_dict)
     epoch_mean = df.mean(axis=0)
     return epoch_mean
-
-def get_value(value):
-    if torch.is_tensor(value):
-        return value.item()
-    return value
 
 def test(args, mode, data_loader, model):
     metrics_dict = []
