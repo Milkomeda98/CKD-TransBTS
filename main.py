@@ -107,10 +107,10 @@ def train_manager(args, train_loader, train_val_loader, model, criterion, optimi
                           "et_hd", "tc_hd", "wt_hd", "mean_hd", 
                           "et_sens", "tc_sens", "wt_sens", "mean_sens", 
                           "et_spec", "tc_spec", "wt_spec", "mean_spec"]
-    if not os.path.exits(csv_file_path):
+    if not os.path.exists(csv_file_path):
         with open(csv_file_path, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(result_header_list)  # Write the header
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(result_header_list)  # Write the header
     
     if args.resume:
         checkpoint = torch.load(os.path.join(args.checkpoint_folder, "checkpoint.pth.tar"))
@@ -133,8 +133,8 @@ def train_manager(args, train_loader, train_val_loader, model, criterion, optimi
                 et_sens, tc_sens, wt_sens, mean_sens = epoch_mean["et_sens"], epoch_mean["tc_sens"], epoch_mean["wt_sens"], epoch_mean["mean_sens"]
                 et_spec, tc_spec, wt_spec, mean_spec = epoch_mean["et_spec"], epoch_mean["tc_spec"], epoch_mean["wt_spec"], epoch_mean["mean_spec"]
                 with open(csv_file_path, mode='a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([et_dice, tc_dice, wt_dice, mean_dice,
+                    csv_writer = csv.writer(file)
+                    csv_writer.writerow([et_dice, tc_dice, wt_dice, mean_dice,
                                      et_hd, tc_hd, wt_hd, mean_hd, 
                                      et_sens, tc_sens, wt_sens, mean_sens, 
                                      et_spec, tc_spec, wt_spec, mean_spec])  # Append a row of data
@@ -221,6 +221,11 @@ def validate(data_loader, model):
     epoch_mean = df.mean(axis=0)
     return epoch_mean
 
+def get_value(value):
+    if torch.is_tensor(value):
+        return value.item()
+    return value
+
 def test(args, mode, data_loader, model):
     metrics_dict = []
     haussdor = HausdorffDistanceMetric(include_background=True, percentile=95)
@@ -255,8 +260,8 @@ def test(args, mode, data_loader, model):
         confuse_metric = cal_confuse(predict, targets, patient_id)
         et_dice, tc_dice, wt_dice = dice_metrics[0], dice_metrics[1], dice_metrics[2]
         et_hd, tc_hd, wt_hd = dice_metrics[3], dice_metrics[4], dice_metrics[5]
-        et_sens, tc_sens, wt_sens = confuse_metric[0][0], confuse_metric[1][0], confuse_metric[2][0]
-        et_spec, tc_spec, wt_spec = confuse_metric[0][1], confuse_metric[1][1], confuse_metric[2][1]
+        et_sens, tc_sens, wt_sens = get_value(confuse_metric[0][0]), get_value(confuse_metric[1][0]), get_value(confuse_metric[2][0])
+        et_spec, tc_spec, wt_spec = get_value(confuse_metric[0][1]), get_value(confuse_metric[1][1]), get_value(confuse_metric[2][1])
         metrics_dict.append(dict(id=patient_id,
             et_dice=et_dice, tc_dice=tc_dice, wt_dice=wt_dice, 
             et_hd=et_hd, tc_hd=tc_hd, wt_hd=wt_hd,
@@ -265,7 +270,7 @@ def test(args, mode, data_loader, model):
         full_predict = np.zeros((155, 240, 240))
         predict = reconstruct_label(predict)
         full_predict[slice(*nonzero_indexes[0]), slice(*nonzero_indexes[1]), slice(*nonzero_indexes[2])] = predict
-        save_test_label(args, mode, patient_id, full_predict)
+        # save_test_label(args, mode, patient_id, full_predict)
     save_seg_csv(args, mode, metrics_dict)
   
 def reconstruct_label(image):
