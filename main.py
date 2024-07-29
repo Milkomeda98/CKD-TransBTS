@@ -8,13 +8,24 @@ import torch.utils.data
 from torch.utils.tensorboard import SummaryWriter
 from BraTS import get_datasets
 from models.model import CKD
+from models.UNet.model import UNet3D
 from models import DataAugmenter
-from utils import mkdir, save_best_model, save_seg_csv, cal_dice, cal_confuse, save_test_label, AverageMeter, save_checkpoint
+from utils import mkdir, save_best_model, save_seg_csv, cal_dice, cal_confuse, save_test_label, AvgMeter, AverageMeter, save_checkpoint
 from torch.backends import cudnn
 from monai.metrics.hausdorff_distance import HausdorffDistanceMetric
 from monai.metrics.meandice import DiceMetric
 from monai.losses.dice import DiceLoss
 from monai.inferers import sliding_window_inference
+from monai.data import decollate_batch
+from monai.utils.enums import MetricReduction
+from monai.transforms import (
+    AsDiscrete,
+    Activations,
+)
+import time
+import pandas as pd
+import csv
+import gc
 
 parser = argparse.ArgumentParser(description='BraTS')
 parser.add_argument('--exp-name', default="CKD", type=str)
@@ -29,7 +40,26 @@ parser.add_argument('--resume', default=False, type=bool)
 parser.add_argument('--tta', default=True, type=bool, help="test time augmentation")
 parser.add_argument('--seed', default=1)
 parser.add_argument('--val', default=1, type=int, help="Validation frequency of the model")
+parser.add_argument("--solver", default="SGD", type = str, help = "Sovler used for training")
+parser.add_argument('--model-name', choices=["CKD-TransBTS", "UNet"], default="CKD-TransBTS", type=str, help="Model name to be selected.")
 
+def get_value(value):
+    if torch.is_tensor(value):
+        return value.item()
+    return value
+
+def select_model(name):
+    '''slect DL model for training or testing.'''
+    all_models = {
+        "CKD-TransBTS": CKD(embed_dim=32, output_dim=3, img_size=(128, 128, 128), patch_size=(4, 4, 4), in_chans=1, depths=[2, 2, 2], num_heads=[2, 4, 8, 16], window_size=(7, 7, 7), mlp_ratio=4.).cuda(),
+        "UNet": UNet3D(in_channels=4, num_classes=3).cuda(),
+        "SegResNet": None
+    }
+    try:
+        model = all_models[name]
+    except KeyError:
+        print(f"Invalid model name: {name}")
+    return model
 
 def init_randon(seed):
     torch.manual_seed(seed)        
@@ -51,17 +81,26 @@ def init_folder(args):
     args.csv_folder = mkdir(f"{args.base_folder}/csv/{args.exp_name}")
     print(f"The code folder are located in {os.path.dirname(os.path.realpath(__file__))}")
     print(f"The dataset folder located in {args.dataset_folder}")
+
 def main(args):  
     writer = SummaryWriter(args.writer_folder)
-    model = CKD(embed_dim=32, output_dim=3, img_size=(128, 128, 128), patch_size=(4, 4, 4), in_chans=1, depths=[2, 2, 2], num_heads=[2, 4, 8, 16], window_size=(7, 7, 7), mlp_ratio=4.).cuda()
+    model = select_model(args.model_name)
     criterion=DiceLoss(sigmoid=True).cuda()
-    optimizer=torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
+    if args.solver == "Adam":
+        optimizer=torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
+        print("Using Adam optimizer")
+    elif args.solver == "SGD":
+        print("Using SGD optimizer")
+        optimizer=torch.optim.SGD(model.parameters(),lr=args.lr, weight_decay=1e-5)
+    elif args.sovler == "AdamW":
+        print("Using AdamW optimizer")
+        optimizer=torch.optim.AdamW(model.parameters(),lr=args.lr, weight_decay=1e-5, amsgrad=True)
 
     if args.mode == "train":
         train_dataset = get_datasets(args.dataset_folder, "train")
         train_val_dataset = get_datasets(args.dataset_folder, "train_val")
-        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=True)
-        train_val_loader = torch.utils.data.DataLoader(train_val_dataset, batch_size=1, shuffle=False, num_workers=args.workers)
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, drop_last=False, pin_memory=True)
+        train_val_loader = torch.utils.data.DataLoader(train_val_dataset, batch_size=1, shuffle=False, num_workers=args.workers, pin_memory=True)
         train_manager(args, train_loader, train_val_loader, model, criterion, optimizer, writer)
     
     elif args.mode == "test" :
@@ -74,9 +113,19 @@ def main(args):
    
 
 def train_manager(args, train_loader, train_val_loader, model, criterion, optimizer, writer):
-    best_loss = np.inf
+    best_mean_dice = -np.inf
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.end_epoch, eta_min=1e-5)
     start_epoch = 0
+    csv_file_path = f"csv/data_{args.model_name}.csv"
+    result_header_list = ["et_dice", "tc_dice", "wt_dice", "mean_dice", 
+                          "et_hd", "tc_hd", "wt_hd", "mean_hd", 
+                          "et_sens", "tc_sens", "wt_sens", "mean_sens", 
+                          "et_spec", "tc_spec", "wt_spec", "mean_spec"]
+    if not os.path.exists(csv_file_path):
+        with open(csv_file_path, mode='w', newline='') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(result_header_list)  # Write the header
+    
     if args.resume:
         checkpoint = torch.load(os.path.join(args.checkpoint_folder, "checkpoint.pth.tar"))
         model.load_state_dict(checkpoint['model'])
@@ -92,13 +141,24 @@ def train_manager(args, train_loader, train_val_loader, model, criterion, optimi
         if (epoch + 1) % args.val == 0:
             model.eval()
             with torch.no_grad():
-                train_val_loss = train_val(train_val_loader, model, criterion, epoch, writer)
-                if train_val_loss < best_loss:
-                    best_loss = train_val_loss
+                epoch_mean = validate(train_val_loader, model)
+                et_dice, tc_dice, wt_dice, mean_dice = epoch_mean["et_dice"], epoch_mean["tc_dice"], epoch_mean["wt_dice"], epoch_mean["mean_dice"]
+                et_hd, tc_hd, wt_hd, mean_hd = epoch_mean["et_hd"], epoch_mean["tc_hd"], epoch_mean["wt_hd"], epoch_mean["mean_hd"]
+                et_sens, tc_sens, wt_sens, mean_sens = epoch_mean["et_sens"], epoch_mean["tc_sens"], epoch_mean["wt_sens"], epoch_mean["mean_sens"]
+                et_spec, tc_spec, wt_spec, mean_spec = epoch_mean["et_spec"], epoch_mean["tc_spec"], epoch_mean["wt_spec"], epoch_mean["mean_spec"]
+                with open(csv_file_path, mode='a', newline='') as file:
+                    csv_writer = csv.writer(file)
+                    csv_writer.writerow([et_dice, tc_dice, wt_dice, mean_dice,
+                                     et_hd, tc_hd, wt_hd, mean_hd, 
+                                     et_sens, tc_sens, wt_sens, mean_sens, 
+                                     et_spec, tc_spec, wt_spec, mean_spec])  # Append a row of data
+
+                if best_mean_dice < mean_dice:
+                    best_mean_dice = mean_dice
                     save_best_model(args, model)
         save_checkpoint(args, dict(epoch=epoch, model = model.state_dict(), optimizer=optimizer.state_dict(), scheduler=scheduler.state_dict()))
-        print(f"epoch = {epoch}, train_loss = {train_loss}, train_val_loss = {train_val_loss}, best_loss = {best_loss}")
-    
+        gc.collect()
+        print(f"epoch = {epoch}, train_loss = {train_loss}, mean_dice = {mean_dice}, mean_hd = {mean_hd}, mean_sens = {mean_sens}")
     print("finish train epoch")
 
 def train(data_loader, model, criterion, optimizer, scheduler, epoch, writer):
@@ -125,6 +185,8 @@ def train_val(data_loader, model, criterion, epoch, writer):
         label = data["label"].cuda()
         images = data["image"].cuda()
         pred = model(images)
+        # Calculate the dice metrics
+
         train_val_loss = criterion(pred, label)
         train_val_loss_meter.update(train_val_loss.item())
     writer.add_scalar("loss/train_val", train_val_loss_meter.avg, epoch)
@@ -135,6 +197,44 @@ def inference(model, input, batch_size, overlap):
         return sliding_window_inference(inputs=input, roi_size=(128, 128, 128), sw_batch_size=batch_size, predictor=model, overlap=overlap)
     return _compute(input)
 
+
+def validate(data_loader, model):
+    metrics_dict = []
+    haussdor = HausdorffDistanceMetric(include_background=True, percentile=95)
+    meandice = DiceMetric(include_background=True)
+    for i, data in enumerate(data_loader):
+        patient_id = data["patient_id"][0]
+        inputs = data["image"]
+        targets = data["label"].cuda()
+        pad_list = data["pad_list"]
+        inputs = inputs.cuda()
+        model.cuda()
+        with torch.no_grad():  
+            predict = torch.sigmoid(inference(model, inputs, batch_size=2, overlap=0.6))
+                
+        targets = targets[:, :, pad_list[-4]:targets.shape[2]-pad_list[-3], pad_list[-6]:targets.shape[3]-pad_list[-5], pad_list[-8]:targets.shape[4]-pad_list[-7]]
+        predict = predict[:, :, pad_list[-4]:predict.shape[2]-pad_list[-3], pad_list[-6]:predict.shape[3]-pad_list[-5], pad_list[-8]:predict.shape[4]-pad_list[-7]]
+        predict = (predict>0.5).squeeze()
+        targets = targets.squeeze()
+        dice_metrics = cal_dice(predict, targets, haussdor, meandice)
+        confuse_metric = cal_confuse(predict, targets, patient_id)
+        et_dice, tc_dice, wt_dice = dice_metrics[0], dice_metrics[1], dice_metrics[2]
+        et_hd, tc_hd, wt_hd = dice_metrics[3], dice_metrics[4], dice_metrics[5]
+        et_sens, tc_sens, wt_sens = get_value(confuse_metric[0][0]), get_value(confuse_metric[1][0]), get_value(confuse_metric[2][0])
+        et_spec, tc_spec, wt_spec = get_value(confuse_metric[0][1]), get_value(confuse_metric[1][1]), get_value(confuse_metric[2][1])
+        metrics_dict.append(dict(
+            et_dice=et_dice, tc_dice=tc_dice, wt_dice=wt_dice, 
+            mean_dice = (et_dice + tc_dice + wt_dice)/3,
+            et_hd=et_hd, tc_hd=tc_hd, wt_hd=wt_hd,
+            mean_hd = (et_hd + tc_hd + wt_hd)/3,
+            et_sens=et_sens, tc_sens=tc_sens, wt_sens=wt_sens,
+            mean_sens = (et_sens + tc_sens + wt_sens)/3,
+            et_spec=et_spec, tc_spec=tc_spec, wt_spec=wt_spec,
+            mean_spec = (et_spec + tc_spec + wt_spec)/3,
+            ))
+    df = pd.DataFrame(metrics_dict)
+    epoch_mean = df.mean(axis=0)
+    return epoch_mean
 
 def test(args, mode, data_loader, model):
     metrics_dict = []
@@ -170,8 +270,8 @@ def test(args, mode, data_loader, model):
         confuse_metric = cal_confuse(predict, targets, patient_id)
         et_dice, tc_dice, wt_dice = dice_metrics[0], dice_metrics[1], dice_metrics[2]
         et_hd, tc_hd, wt_hd = dice_metrics[3], dice_metrics[4], dice_metrics[5]
-        et_sens, tc_sens, wt_sens = confuse_metric[0][0], confuse_metric[1][0], confuse_metric[2][0]
-        et_spec, tc_spec, wt_spec = confuse_metric[0][1], confuse_metric[1][1], confuse_metric[2][1]
+        et_sens, tc_sens, wt_sens = get_value(confuse_metric[0][0]), get_value(confuse_metric[1][0]), get_value(confuse_metric[2][0])
+        et_spec, tc_spec, wt_spec = get_value(confuse_metric[0][1]), get_value(confuse_metric[1][1]), get_value(confuse_metric[2][1])
         metrics_dict.append(dict(id=patient_id,
             et_dice=et_dice, tc_dice=tc_dice, wt_dice=wt_dice, 
             et_hd=et_hd, tc_hd=tc_hd, wt_hd=wt_hd,
@@ -180,7 +280,7 @@ def test(args, mode, data_loader, model):
         full_predict = np.zeros((155, 240, 240))
         predict = reconstruct_label(predict)
         full_predict[slice(*nonzero_indexes[0]), slice(*nonzero_indexes[1]), slice(*nonzero_indexes[2])] = predict
-        save_test_label(args, mode, patient_id, full_predict)
+        # save_test_label(args, mode, patient_id, full_predict)
     save_seg_csv(args, mode, metrics_dict)
   
 def reconstruct_label(image):
@@ -196,10 +296,15 @@ if __name__=='__main__':
     args=parser.parse_args()
     for arg in vars(args):
         print(format(arg, '<20'), format(str(getattr(args, arg)), '<'))
-    if torch.cuda.device_count() == 0:
-        raise RuntimeWarning("Can not run without GPUs")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if not device == "cpu" and device == "cuda":
+        if torch.cuda.device_count() == 0:
+            raise RuntimeWarning("Can not run without GPUs")
+        
+        print(f'Number of cuda devices: {torch.cuda.device_count()}')
+        torch.cuda.set_device(args.devices)
+
     init_randon(args.seed)
     init_folder(args)
-    torch.cuda.set_device(args.devices)
     main(args)
 

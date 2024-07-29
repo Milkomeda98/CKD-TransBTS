@@ -1,0 +1,15 @@
+# Cuda and torch version should be compatible.
+
+# CUDA
+# python == 3.7
+# torch>=1.11.0
+
+# MONAI install torch
+monai==0.8.1
+SimpleITK==2.0.2
+numpy==1.19.2
+tensorboard==2.7.0
+pandas==1.1.5
+einops==0.3.2
+timm==0.4.12
+protobuf==3.20.*

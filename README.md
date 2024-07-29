@@ -23,15 +23,19 @@ Brain tumor segmentation (BTS) in magnetic resonance image (MRI) is crucial for 
 - pandas==1.1.5
 - einops==0.3.2
 - timm==0.4.12
+
+```bash
+pip install -r requirements.txt
+```
 ## Data Preparation
 
-BraTS2021
+BraTS2023
 
-- Please download the BraTS2021 dataset from the official competition[ website](https://www.synapse.org/#!Synapse:syn25829067/wiki/), and the detailed description is available [here](http://braintumorsegmentation.org/). The dataset split of Table 1 (in paper) has been released in `dataset/`. Please put the BraTS2021 dataset into `dataset/` folder and it's structure should be like below:
+- Please download the BraTS2023 dataset from the official competition[ website](https://www.synapse.org/#!Synapse:syn25829067/wiki/), and the detailed description is available [here](http://braintumorsegmentation.org/). The dataset split of Table 1 (in paper) has been released in `dataset/`. Please put the BraTS2023 dataset into `dataset/` folder and it's structure should be like below:
 
 ```
 ├── dataset/
-│   ├── brats2021
+│   ├── brats2023
 │   │   ├── train
 │   │   │     ├── BraTS2021_00000
 │   │   │	  │		    ├──BraTS2021_00000_t1.nii.gz
@@ -58,7 +62,7 @@ BraTS2021
 - Download the repository.
 
   ```
-  git clone https://github.com/sword98/CKD-TransBTS.git
+  https://github.com/faizan1234567/CKD-TransBTS
   ```
 
 - Train our method from scratch and test it by:
@@ -87,12 +91,19 @@ BraTS2021
       --batch-size 1 --workers 1 --mode "test"
   ```
 
+**Note**: checkpoints are not downloadable, the link does not work. 
 To test our method directly, you should download the [checkpoint](https://drive.google.com/file/d/1gQLQzx2g9_BFhI_rpOfDfERLozHX7pOg/view?) and place it in the `"CKD_Inference"` folder under the `"best_model"` folder.
   
 
 ## Result
 
 - ![outline](Quantitative_Result.png)
+
+## Observations
+- if running on machine with limmited number of workers decrease workers to 16 or something else
+- downgrade protobuf
+- specify the full dataset path 
+
 
 ## Citation
 If you find the code useful, please consider citing our paper using the following BibTeX entry.

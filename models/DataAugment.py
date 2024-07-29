@@ -3,6 +3,7 @@ from torch import nn
 from random import random, uniform
 from monai.transforms.spatial.array import Zoom
 from monai.transforms.intensity.array import RandGaussianNoise, GaussianSharpen, AdjustContrast
+
 class DataAugmenter(nn.Module):
     def __init__(self):
         super(DataAugmenter,self).__init__()

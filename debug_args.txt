@@ -1,0 +1,23 @@
+command line args
+
+--exp-name EXP_NAME
+  --mode {train,test}
+  --dataset-folder DATASET_FOLDER
+                        Please reference the README file for the detailed
+                        dataset structure.
+  --workers WORKERS     The value of CPU's num_worker
+  --end-epoch END_EPOCH
+                        Maximum iterations of the model
+  --batch-size BATCH_SIZE
+  --lr LR
+  --devices DEVICES
+  --resume RESUME
+  --tta TTA             test time augmentation
+  --val VAL             Validation frequency of the model
+
+python main.py --exp-name "test-experiment" --dataset-folder "E:/Brats23 Data/Dataset/BraTS23_mapped/brats2023" --workers 4 --end-epoch 1
+--batch-size 1 --lr 3e-4 --val 1
+
+# debug args
+"args": ["--exp-name", "test-experiment", "--dataset-folder", "E:/Brats23 Data/Dataset/BraTS23_mapped/brats2023", "--workers", "4", 
+"--end-epoch", "1", "--batch-size", "1", "--lr", "3e-4", "--val", "1"]
