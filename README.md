@@ -87,7 +87,7 @@ BraTS2021
       --batch-size 1 --workers 1 --mode "test"
   ```
 
-To test our method directly, you should download the [checkpoint](https://drive.google.com/file/d/1gQLQzx2g9_BFhI_rpOfDfERLozHX7pOg/view?) and place it in the `"CKD_Inference"` folder under the `"best_model"` folder.
+To test our method directly, you should download the [checkpoint](https://drive.google.com/drive/folders/1-JU6wPgOJblykZwhDEMu-lUoGDvxTiwE?usp=sharing) and place it in the `"CKD_Inference"` folder under the `"best_model"` folder.
   
 
 ## Result
