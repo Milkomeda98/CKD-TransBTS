@@ -1,7 +1,7 @@
 # CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation
 
 ## [update]
-[2024.9.28] Updated model file in Google Drive
+[2024.9.28] We have updated the link of model parameters. It can now be downloaded from [Google Drive](https://drive.google.com/drive/folders/1-JU6wPgOJblykZwhDEMu-lUoGDvxTiwE?usp=sharing).
 ## Introduction
 This is the source code of our paper **[CKD-TransBTS: Clinical Knowledge-Driven Hybrid Transformer with Modality-Correlated Cross-Attention for Brain Tumor Segmentation](https://ieeexplore.ieee.org/document/10056308/authors)**, which is implemented based on the code of [Swin-Transfomrer](https://github.com/microsoft/Swin-Transformer) and [MONAI](https://github.com/Project-MONAI/MONAI).
 
